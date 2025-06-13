@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "1081580251049",
+    "firebase_url": "https://ars-printing-press-default-rtdb.firebaseio.com",
+    "project_id": "ars-printing-press",
+    "storage_bucket": "ars-printing-press.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1081580251049:android:0dfbc13e8c7560c21306b8",
+        "android_client_info": {
+          "package_name": "com.example.i_see_you"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdANMtFydVPSkTpursH--rvg0T5V8zRIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1081580251049:android:6780216d17fa66d71306b8",
+        "android_client_info": {
+          "package_name": "com.example.iseeyou"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdANMtFydVPSkTpursH--rvg0T5V8zRIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1081580251049:android:9f436b34670940a01306b8",
+        "android_client_info": {
+          "package_name": "com.example.iseeyou_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdANMtFydVPSkTpursH--rvg0T5V8zRIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
