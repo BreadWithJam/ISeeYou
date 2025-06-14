@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iseeyou_2/Tabs/HeatMap.dart';
 import 'package:iseeyou_2/models/app_notification.dart';
 import 'package:iseeyou_2/Tabs/Notifications.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,12 +6,8 @@ import 'package:iseeyou_2/Functions/HistoryFnc.dart';
 import 'package:iseeyou_2/Widget/BottomNavBar.dart';
 import 'package:iseeyou_2/Tabs/MockMap.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io' as io;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
 
 class History extends StatefulWidget {
   const History({super.key});
@@ -34,14 +29,12 @@ class _HistoryState extends State<History> {
 
   XFile? _pickedFile;
 
-
   @override
   void initState() {
     super.initState();
     _fetchNotifications();
     _fetchUserInfo();
   }
-
 
   void _onItemTapped(int index) {
     setState(() {
@@ -60,45 +53,25 @@ class _HistoryState extends State<History> {
     }
   }
 
-
   Future<void> _uploadImageToFirebase() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null && _pickedFile != null) {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('profile_images')
-            .child('${user.uid}.jpg');
+    if (_pickedFile != null) {
+      final url = await ProfileImageUploadAndDisplay.uploadImage(_pickedFile!);
 
-        if (kIsWeb) {
-          Uint8List data = await _pickedFile!.readAsBytes();
-          await ref.putData(data);
-        } else {
-          final file = io.File(_pickedFile!.path);
-          await ref.putFile(file);
-        }
-
-        final downloadURL = await ref.getDownloadURL();
-        print('DEBUG: Uploaded image download URL: $downloadURL');
-
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .update({'profileImageUrl': downloadURL});
-
+      if (url != null) {
         setState(() {
-          _profileImageUrl = downloadURL;
+          _profileImageUrl = url;
           _pickedFile = null;
         });
-
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Profile image updated'),
           backgroundColor: Colors.green,
         ));
-
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Image upload failed'),
+          backgroundColor: Colors.red,
+        ));
       }
-    } catch (e) {
-      print('Error uploading image: $e');
     }
   }
 
@@ -121,11 +94,8 @@ class _HistoryState extends State<History> {
           TextButton(
             onPressed: () async {
               final newNumber = controller.text.trim();
-              if (newNumber.isNotEmpty) {
-                final user = FirebaseAuth.instance.currentUser;
-                await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
-                  'mobilenum': newNumber,
-                });
+              final success = await EditMobileNum.updateMobileNumber(newNumber);
+              if (success) {
                 setState(() {
                   _mobile = newNumber;
                 });
@@ -133,6 +103,11 @@ class _HistoryState extends State<History> {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('Mobile number updated'),
                   backgroundColor: Colors.green,
+                ));
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Failed to update number'),
+                  backgroundColor: Colors.red,
                 ));
               }
             },
@@ -157,8 +132,6 @@ class _HistoryState extends State<History> {
     }
   }
 
-  //File? _imageFile;
-
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
@@ -169,7 +142,6 @@ class _HistoryState extends State<History> {
     }
   }
 
-
   Future<void> _fetchNotifications() async {
     final notifications = await FetchNotif.fetchNotifications();
     setState(() {
@@ -177,7 +149,6 @@ class _HistoryState extends State<History> {
       _isLoading = false;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
