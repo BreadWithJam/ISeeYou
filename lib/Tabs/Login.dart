@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:iseeyou_2/Tabs/History.dart';
 import 'dart:async';
+import 'package:iseeyou_2/Functions/LoginFnc.dart';
 
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
 }
-
 class _LoginState extends State<Login> {
   @override
   void dispose() {
@@ -29,48 +28,6 @@ class _LoginState extends State<Login> {
 
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  Future<void> _loginUser() async {
-    try {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
-
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-      User? user = userCredential.user;
-
-      if (user != null && !user.emailVerified) {
-        await FirebaseAuth.instance.signOut();
-
-        setState(() {
-          _showResendButton = true;
-        });
-
-        _showPopup(context, 'Please verify your email before logging in.');
-        return;
-      }
-
-      print('Login successful');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => History()),
-      );
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      if (e.code == 'user-not-found') {
-        errorMessage = "User not found";
-      } else if (e.code == 'wrong-password') {
-        errorMessage = "Password incorrect";
-      } else {
-        errorMessage = 'Login failed: Please make sure your email and password are correct';
-      }
-
-      _showPopup(context, errorMessage);
-
-      print('FirebaseAuthException code: ${e.code}');
-      print('FirebaseAuthException message: ${e.message}');
-    }
-  }
-
   void _startResendCooldown() {
     setState(() {
       _resendDisabled = true;
@@ -88,27 +45,6 @@ class _LoginState extends State<Login> {
       });
     });
   }
-
-  void _showPopup(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
-          content: Text(message, textAlign: TextAlign.center),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
   String? emailValidator(String? value) {
     if (value == null || value
         .trim()
@@ -126,6 +62,7 @@ class _LoginState extends State<Login> {
     return null;
   }
 
+  //////////////////////////////////////// start sa UI //////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme
@@ -242,7 +179,20 @@ class _LoginState extends State<Login> {
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState?.validate() ?? false) {
-                          _loginUser();
+                          LoginLogic.loginUser(
+                            context: context,
+                            emailController: _emailController,
+                            passwordController: _passwordController,
+                            formKey: _formKey,
+                            showResendCallback: (show) {
+                              setState(() {
+                                _showResendButton = show;
+                              });
+                            },
+                            showPopup: (message) {
+                              PopUpDialog.showPopup(context, 'Please make sure the email and password are correct.');
+                            },
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -250,7 +200,7 @@ class _LoginState extends State<Login> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        backgroundColor: Color(0xFF101651),
+                        backgroundColor: const Color(0xFF101651),
                         elevation: 2,
                       ),
                       child: Text(
@@ -263,6 +213,7 @@ class _LoginState extends State<Login> {
                         ),
                       ),
                     ),
+
                     if (_showResendButton) ...[
                       SizedBox(height: 16),
                       TextButton(
@@ -289,7 +240,7 @@ class _LoginState extends State<Login> {
                                 ),
                               );
 
-                              _startResendCooldown(); // Start timer here
+                              _startResendCooldown();
                             }
                           } on FirebaseAuthException catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
