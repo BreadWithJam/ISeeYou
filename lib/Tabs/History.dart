@@ -158,7 +158,8 @@ class _HistoryState extends State<History> {
       _isLoading = false;
     });
   }
-
+//////////////////////////////////start sa UI/////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,7 +260,7 @@ class _HistoryState extends State<History> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Email and Mobile aligned to the left
+
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Column(
@@ -334,7 +335,7 @@ class _HistoryState extends State<History> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Camera Image
+                    // Image sa Camera
                     Padding(
                       padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
                       child: ClipRRect(

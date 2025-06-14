@@ -3,7 +3,8 @@ import 'package:iseeyou_2/models/app_notification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:iseeyou_2/Tabs/Notifications.dart';
 import 'package:iseeyou_2/Widget/BuildCameraImage.dart';
-
+import 'package:iseeyou_2/Functions/ReportFnc.dart';
+import 'package:iseeyou_2/Widget/BuildButton.dart';
 
 class ReportSummary extends StatefulWidget {
   final AppNotification notification;
@@ -21,24 +22,19 @@ class _ReportSummaryState extends State<ReportSummary> {
     super.initState();
     loadIsReportedFlag();
   }
-
   String? selectedResponder;
   String? selectedStatus;
   bool isReported = false;
-
 
   final List<String> responders = ['PNP', 'TMU', 'Responder'];
   final List<String> statusOptions = ['On-going', 'Done'];
 
   Future<void> updateStatusInFirebase(String newStatus) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('Notification Details')
-          .doc(widget.notification.id)
-          .update({
-        'Status': newStatus,
-        'isReported': true,
-      });
+      await Reports.updateStatus(
+        documentId: widget.notification.id,
+        newStatus: newStatus,
+      );
 
       setState(() {
         isReported = true;
@@ -52,55 +48,50 @@ class _ReportSummaryState extends State<ReportSummary> {
     }
   }
 
-  Future<void> loadIsReportedFlag() async {
-    final doc = await FirebaseFirestore.instance
-        .collection('Notification Details')
-        .doc(widget.notification.id)
-        .get();
-
-    if (doc.exists && doc.data() != null) {
-      final data = doc.data()!;
-      setState(() {
-        isReported = data['isReported'] == true; // Set state from Firestore
-      });
-    }
-  }
-
-
-  void showSuccessDialog() {
+  void _showCannotModifyDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text("Successfully Reported"),
-          content: const Text("The status has been updated successfully."),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                // Mark as opened in Firestore
-                await FirebaseFirestore.instance
-                    .collection('Notification Details')
-                    .doc(widget.notification.id)
-                    .update({'isOpened': true});
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Action Blocked"),
+        content: const Text("This report has already been marked as Done and can no longer be modified."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+  Future<void> loadIsReportedFlag() async {
+    final flag = await PopUpDialogForReport.getIsReportedFlag(widget.notification.id);
 
+    setState(() {
+      isReported = flag;
+    });
+  }
 
-                Navigator.of(context).pop();
+  Future<void> showSuccessDialog() async {
+    PopUpDialogForReport.showSuccessDialog(
+      context: context,
+      onConfirmed: () async {
+        await FirebaseFirestore.instance
+            .collection('Notification Details')
+            .doc(widget.notification.id)
+            .update({'isOpened': true});
 
+        Navigator.of(context).pop();
 
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => NotificationPage()),
-                      (Route<dynamic> route) => false,
-                );
-              },
-              child: const Text("OK"),
-            ),
-          ],
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => NotificationPage()),
+              (Route<dynamic> route) => false,
         );
       },
     );
   }
-
+///////////////////////////////////////////Start sa UI/////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,13 +145,10 @@ class _ReportSummaryState extends State<ReportSummary> {
                   const SizedBox(height: 8),
                   Text("Time : ${widget.notification.Time}", style: const TextStyle(fontSize: 16)),
                   const SizedBox(height: 20),
-
-
                 ],
               ),
             ),
             const SizedBox(height: 24),
-
             // Tong tulo ka buttons
             Column(
               children: [
@@ -235,35 +223,23 @@ class _ReportSummaryState extends State<ReportSummary> {
                 const SizedBox(height: 12),
 
                 // Logic sa report btton
-                _buildButton(isReported ? "Update Status" : "Report", Color(0xFF101651), () {
-                  if (selectedStatus != null) {
-                    updateStatusInFirebase(selectedStatus!);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please select a status first')),
-                    );
-                  }
-                }),
+                ThreeButtons(
+                  label: isReported ? "Update Status" : "Report",
+                  color: const Color(0xFF101651),
+                  onPressed: () {
+                    if (selectedStatus != null) {
+                      updateStatusInFirebase(selectedStatus!);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select a status first')),
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  //tawagon para sa mga button
-  Widget _buildButton(String label, Color color, VoidCallback onPressed) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed, // <- fix here
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
       ),
     );
   }

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iseeyou_2/Tabs/Report.dart';
 import 'package:iseeyou_2/models/app_notification.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:iseeyou_2/Tabs/History.dart';
 import 'package:iseeyou_2/Widget/BottomNavBar.dart';
-import 'package:iseeyou_2/Tabs/HeatMap.dart';
 import 'package:iseeyou_2/Tabs/MockMap.dart';
+import 'package:iseeyou_2/Functions/NotificationsFnc.dart';
 
 
 class NotificationPage extends StatefulWidget {
@@ -15,6 +14,13 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNotifications();
+  }
+
   List<AppNotification> notifications = [];
 
   int _selectedIndex = 1;
@@ -34,35 +40,14 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchNotifications();
-  }
-
   Future<void> fetchNotifications() async {
-    print("Fetching notifications...");
+    final fetchedNotifications = await Notif.fetchNotifications();
 
-    final snapshot = await FirebaseFirestore.instance
-        .collection('Notification Details')
-        .orderBy('Date', descending: true)
-        .get();
-
-    print("Documents fetched: ${snapshot.docs.length}");
     setState(() {
-      notifications = snapshot.docs
-          .map((doc) => AppNotification.fromFirestore(doc))
-          .toList();
+      notifications = fetchedNotifications;
     });
   }
 
-  Future<void> markAsOpened(String id) async {
-    await FirebaseFirestore.instance
-        .collection('Notification Details')
-        .doc(id)
-        .update({'isOpened': true});
-    fetchNotifications();
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,7 +117,6 @@ class _NotificationPageState extends State<NotificationPage> {
                           builder: (context) => ReportSummary(notification: notification),
                         ),
                       ).then((_) {
-                        // Refresh notif
                         fetchNotifications();
                       });
                     },
@@ -185,12 +169,8 @@ class _NotificationPageState extends State<NotificationPage> {
                     ),
                   );
                 },
-
               ),
-
             ),
-
-
           ],
         ),
       ),
