@@ -13,7 +13,7 @@ Widget buildCameraImage(String url) {
           height: 100,
           width: double.infinity,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Text('Image failed to load'),
+          errorBuilder: (context, error, stackTrace) => const Text('No image to show'),
         ),
       ),
     ],

@@ -22,6 +22,9 @@ class _HistoryState extends State<History> {
   String _position = '';
   String _profileImageUrl = '';
 
+  String? selectedLocation;
+  final List<String> locations = ['All', 'Green Coffee Intersection', 'Quirante I', 'Quirante II', 'Sobrecary Pioneer', 'Sobrecary Mabini'];
+
   List<AppNotification> _notifications = [];
   bool _isLoading = true;
   int _selectedIndex = 0;
@@ -143,8 +146,15 @@ class _HistoryState extends State<History> {
 
   Future<void> _fetchNotifications() async {
     final notifications = await FetchNotif.fetchNotifications();
+
     setState(() {
-      _notifications = notifications;
+      if (selectedLocation == null || selectedLocation == 'All') {
+        _notifications = notifications;
+      } else {
+        _notifications = notifications
+            .where((n) => n.Location == selectedLocation)
+            .toList();
+      }
       _isLoading = false;
     });
   }
@@ -156,7 +166,49 @@ class _HistoryState extends State<History> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF101651),
         elevation: 0,
-        title: const Text('Reports', style: TextStyle(color: Colors.white)),
+        title: Row(
+          children: [
+            const Text(
+              'Reports',
+              style: TextStyle(color: Colors.white),
+            ),
+            const SizedBox(width:200),
+            Container(
+              width: 110,
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedLocation,
+                  dropdownColor: Color(0xFF282828),
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                  isExpanded: true,
+                  hint: const Text(
+                    'Location',
+                    style: TextStyle(color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  items: locations.map((location) {
+                    return DropdownMenuItem<String>(
+                      value: location,
+                      child: Text(
+                        location,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Color(0xFFE7E4E4)),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedLocation = value!;
+                      _isLoading = true;
+                    });
+                    _fetchNotifications();
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
         leading: Builder(
           builder: (context) => IconButton(
