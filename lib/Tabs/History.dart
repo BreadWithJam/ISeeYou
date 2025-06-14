@@ -14,7 +14,6 @@ class History extends StatefulWidget {
   @override
   State<History> createState() => _HistoryState();
 }
-
 class _HistoryState extends State<History> {
   String _firstname = '';
   String _lastname = '';
