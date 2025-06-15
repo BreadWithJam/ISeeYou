@@ -123,17 +123,17 @@ class _ReportSummaryState extends State<ReportSummary> {
                     children: [
                       Row(
                         children: [
-                          Expanded(child: buildCameraImage(widget.notification.camera1)),
+                          Expanded(child: buildCameraImage(widget.notification.Camera1)),
                           const SizedBox(width: 12),
-                          Expanded(child: buildCameraImage(widget.notification.camera2)),
+                          Expanded(child: buildCameraImage(widget.notification.Camera2)),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Expanded(child: buildCameraImage(widget.notification.camera3)),
+                          Expanded(child: buildCameraImage(widget.notification.Camera3)),
                           const SizedBox(width: 12),
-                          Expanded(child: buildCameraImage(widget.notification.camera4)),
+                          Expanded(child: buildCameraImage(widget.notification.Camera4)),
                         ],
                       ),
                     ],

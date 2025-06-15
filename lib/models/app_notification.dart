@@ -7,10 +7,10 @@ class AppNotification {
   final String Time;
   final bool isReported;
   final String Location;
-  final String camera1;
-  final String camera2;
-  final String camera3;
-  final String camera4;
+  final String Camera1;
+  final String Camera2;
+  final String Camera3;
+  final String Camera4;
   final String Status;
 
   AppNotification({
@@ -20,10 +20,10 @@ class AppNotification {
     required this.isReported,
     required this.Location,
     required this.Time,
-    required this.camera1,
-    required this.camera2,
-    required this.camera3,
-    required this.camera4,
+    required this.Camera1,
+    required this.Camera2,
+    required this.Camera3,
+    required this.Camera4,
     required this.Status,
 
 
@@ -40,10 +40,10 @@ class AppNotification {
       Location:  data['Location'] ?? '',
       Time:  data['Time'] ?? '',
       Status:  data['Status'] ?? '',
-      camera1: (data['camera1'] ?? '').toString().replaceAll('"', '').trim(),
-      camera2: (data['camera2'] ?? '').toString().replaceAll('"', '').trim(),
-      camera3: (data['camera3'] ?? '').toString().replaceAll('"', '').trim(),
-      camera4: (data['camera4'] ?? '').toString().replaceAll('"', '').trim(),
+      Camera1: (data['Camera1'] ?? '').toString().replaceAll('"', '').trim(),
+      Camera2: (data['Camera2'] ?? '').toString().replaceAll('"', '').trim(),
+      Camera3: (data['Camera3'] ?? '').toString().replaceAll('"', '').trim(),
+      Camera4: (data['Camera4'] ?? '').toString().replaceAll('"', '').trim(),
     );
   }
 }

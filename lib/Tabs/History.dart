@@ -341,7 +341,7 @@ class _HistoryState extends State<History> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.network(
-                          notification.camera1.trim().replaceAll('"', ''),
+                          notification.Camera1.trim().replaceAll('"', ''),
                           height: 120,
                           width: double.infinity,
                           fit: BoxFit.cover,
