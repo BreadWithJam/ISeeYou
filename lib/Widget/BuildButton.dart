@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 class ThreeButtons extends StatelessWidget {
   final String label;
   final Color color;
-  final VoidCallback onPressed;
+  //final VoidCallback onPressed;
+  final void Function()? onPressed;
 
   const ThreeButtons({
-    super.key,
+    Key? key,
     required this.label,
     required this.color,
     required this.onPressed,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
