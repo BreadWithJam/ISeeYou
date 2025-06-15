@@ -10,7 +10,7 @@ Widget buildCameraImage(String url) {
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
           cleanUrl,
-          height: 100,
+          height: 125,
           width: double.infinity,
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {

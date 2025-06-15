@@ -16,18 +16,44 @@ class ReportSummary extends StatefulWidget {
 }
 
 class _ReportSummaryState extends State<ReportSummary> {
-
+  String? selectedResponder;
+  String? selectedStatus;
+  bool isReported = false;
+  String? originalStatus;
   @override
   void initState() {
     super.initState();
     loadIsReportedFlag();
+    selectedStatus = 'Pending';
+    fetchInitialValues();
+    originalStatus = widget.notification.Status;
+    selectedStatus = widget.notification.Status;
+    if (widget.notification.Responder != null) {
+      selectedResponder = widget.notification.Responder;
+    }
   }
-  String? selectedResponder;
-  String? selectedStatus;
-  bool isReported = false;
 
   final List<String> responders = ['PNP', 'TMU', 'Responder'];
-  final List<String> statusOptions = ['On-going', 'Done'];
+  final List<String> statusOptions = ['On-going', 'Done', 'Pending'];
+
+  Future<void> fetchInitialValues() async {
+    final docSnapshot = await FirebaseFirestore.instance
+        .collection('crashes')
+        .doc(widget.notification.folderId)
+        .collection('reports')
+        .doc(widget.notification.id)
+        .get();
+
+    if (docSnapshot.exists) {
+      final data = docSnapshot.data()!;
+      setState(() {
+        selectedStatus = data['status'];         // e.g., 'Pending', 'On-going', 'Done'
+        selectedResponder = data['responder'];   // the saved responder
+        originalStatus = data['status'];         // to disable the button if status is Done
+        isReported = selectedStatus != 'Pending'; // change based on your logic
+      });
+    }
+  }
 
   Future<void> updateStatusInFirebase(String newStatus) async {
     try {
@@ -44,6 +70,25 @@ class _ReportSummaryState extends State<ReportSummary> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update status: $e')),
+      );
+    }
+  }
+
+  Future<void> updateResponderInFirebase(String newResponder) async {
+    try {
+      await Reports.updateResponder(
+        documentId: widget.notification.id,
+        newResponder: newResponder,
+      );
+
+      setState(() {
+        isReported = true;
+      });
+
+      showSuccessDialog();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to choose responder: $e')),
       );
     }
   }
@@ -94,6 +139,11 @@ class _ReportSummaryState extends State<ReportSummary> {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
+    if (originalStatus == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -223,19 +273,43 @@ class _ReportSummaryState extends State<ReportSummary> {
                 const SizedBox(height: 12),
 
                 // Logic sa report btton
+
+
                 ThreeButtons(
                   label: isReported ? "Update Status" : "Report",
                   color: const Color(0xFF101651),
-                  onPressed: () {
-                    if (selectedStatus != null) {
-                      updateStatusInFirebase(selectedStatus!);
-                    } else {
+                  onPressed: (originalStatus == "Done")
+                      ? null
+                      : () {
+                    if (selectedResponder == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select a responder first')),
+                      );
+                      return;
+                    }
+
+                    if (selectedStatus == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please select a status first')),
                       );
+                      return;
                     }
+
+                    if (selectedStatus == "Pending") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cannot report as pending')),
+                      );
+                      return;
+                    }
+
+                    // Save responder first
+                    updateResponderInFirebase(selectedResponder!);
+
+                    // Then update status
+                    updateStatusInFirebase(selectedStatus!);
                   },
-                ),
+                )
+
               ],
             ),
           ],

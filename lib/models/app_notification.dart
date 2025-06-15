@@ -12,6 +12,9 @@ class AppNotification {
   final String Camera3;
   final String Camera4;
   final String Status;
+  final String Responder;
+  final String? folderId;
+  final Map<String, dynamic> confidence_scores;
 
   AppNotification({
     required this.id,
@@ -25,6 +28,9 @@ class AppNotification {
     required this.Camera3,
     required this.Camera4,
     required this.Status,
+    required this.Responder,
+    this.folderId,
+    required this.confidence_scores,
 
 
 
@@ -40,10 +46,18 @@ class AppNotification {
       Location:  data['Location'] ?? '',
       Time:  data['Time'] ?? '',
       Status:  data['Status'] ?? '',
+      Responder:  data['Responder'] ?? '',
+      folderId: data['folderId'],
       Camera1: (data['Camera1'] ?? '').toString().replaceAll('"', '').trim(),
       Camera2: (data['Camera2'] ?? '').toString().replaceAll('"', '').trim(),
       Camera3: (data['Camera3'] ?? '').toString().replaceAll('"', '').trim(),
       Camera4: (data['Camera4'] ?? '').toString().replaceAll('"', '').trim(),
+      confidence_scores: Map<String, dynamic>.from(data['confidence_scores'] ?? {
+        'Camera A': 0.0,
+        'Camera B': 0.0,
+        'Camera C': 0.0,
+        'Camera D': 0.0,
+      }),
     );
   }
 }

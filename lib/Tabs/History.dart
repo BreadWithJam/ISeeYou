@@ -148,20 +148,51 @@ class _HistoryState extends State<History> {
     final notifications = await FetchNotif.fetchNotifications();
 
     setState(() {
+      final doneNotifications = notifications.where((n) => n.Status == "Done").toList();
+
       if (selectedLocation == null || selectedLocation == 'All') {
-        _notifications = notifications;
+        _notifications = doneNotifications;
       } else {
-        _notifications = notifications
-            .where((n) => n.Location == selectedLocation)
-            .toList();
+        _notifications = doneNotifications.where((n) => n.Location == selectedLocation).toList();
       }
       _isLoading = false;
     });
   }
+
+  String getHighestConfidenceCameraUrl(AppNotification notification) {
+    final scores = {
+      "Camera A": double.tryParse(notification.confidence_scores["Camera A"]?.toString() ?? "0") ?? 0.0,
+      "Camera B": double.tryParse(notification.confidence_scores["Camera B"]?.toString() ?? "0") ?? 0.0,
+      "Camera C": double.tryParse(notification.confidence_scores["Camera C"]?.toString() ?? "0") ?? 0.0,
+      "Camera D": double.tryParse(notification.confidence_scores["Camera D"]?.toString() ?? "0") ?? 0.0,
+    };
+
+    final MapEntry<String, double> highest = scores.entries.reduce(
+          (a, b) => a.value >= b.value ? a : b,
+    );
+
+    print("Confidence Scores: $scores");
+    print("Selected Camera: ${highest.key} with score ${highest.value}");
+
+    switch (highest.key) {
+      case "Camera A":
+        return notification.Camera1;
+      case "Camera B":
+        return notification.Camera2;
+      case "Camera C":
+        return notification.Camera3;
+      case "Camera D":
+        return notification.Camera4;
+      default:
+        return notification.Camera1; // fallback
+    }
+  }
+
 //////////////////////////////////start sa UI/////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Color(0xFFE6F7FF),
       appBar: AppBar(
@@ -173,9 +204,9 @@ class _HistoryState extends State<History> {
               'Reports',
               style: TextStyle(color: Colors.white),
             ),
-            const SizedBox(width:200),
+            const SizedBox(width:50),
             Container(
-              width: 110,
+              width: 120,
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: selectedLocation,
@@ -341,7 +372,7 @@ class _HistoryState extends State<History> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Image.network(
-                          notification.Camera1.trim().replaceAll('"', ''),
+                          getHighestConfidenceCameraUrl(notification).trim().replaceAll('"', ''),
                           height: 120,
                           width: double.infinity,
                           fit: BoxFit.cover,

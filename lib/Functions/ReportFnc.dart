@@ -26,7 +26,22 @@ class Reports {
       'isReported': true,
     });
   }
+
+  static Future<void> updateResponder({
+    required String documentId,
+    required String newResponder,
+  }) async {
+    await FirebaseFirestore.instance
+        .collection('Notification Details')
+        .doc(documentId)
+        .update({
+      'Responder': newResponder,
+      'isReported': true,
+    });
+  }
 }
+
+
 
 class PopUpDialogForReport {
   static void showPopup(BuildContext context, String message) {
